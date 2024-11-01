@@ -5,14 +5,30 @@ const User = require('../models/User');
 // Route to create a new user or update user data if they are new
 router.post('/register', async (req, res) => {
   const { phoneNumber, firstName, lastName, email } = req.body;
-
+  console.log(req.body);
   try {
+    console.log('registering user...');
     let user = await User.findOne({ email });
-
+    console.log(user);
     if (!user) {
       // First-time user
-      user = new User({ phoneNumber, firstName, lastName, isNewUser: false });
-      await user.save();
+      console.log('New user');
+      user = new User({
+        phoneNumber,
+        firstName,
+        email,
+        lastName,
+        isNewUser: false,
+      });
+      console.log(user);
+      try {
+        await user.save();
+        console.log('User saved successfully');
+      } catch (error) {
+        console.error('Error saving user:', error);
+        return;
+      }
+      console.log('User registered');
       return res.status(201).json({ message: 'User registered', user });
     }
 
@@ -22,9 +38,8 @@ router.post('/register', async (req, res) => {
     user.phoneNumber = phoneNumber || user.phoneNumber;
     user.isNewUser = false;
 
-    user.isNewUser = false;
     await user.save();
-    res.status(200).json({ message: 'User updated', user });
+    res.status(201).json({ message: 'User updated', user });
   } catch (err) {
     res.status(500).json({ error: 'Error processing request' });
   }
@@ -44,7 +59,6 @@ router.get('/', async (req, res) => {
 router.get('/:email', async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
-    console.log(user);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

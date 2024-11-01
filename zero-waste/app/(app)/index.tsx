@@ -1,9 +1,10 @@
 import { useAuth, useClerk } from '@clerk/clerk-expo';
 import { Redirect, router } from 'expo-router';
 import React from 'react';
-import { Button, SafeAreaView, Text, View } from 'react-native';
+import { Button, Text, View } from 'react-native';
 import axios, { AxiosError } from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function Page() {
   const { user, signOut } = useClerk();
@@ -16,7 +17,7 @@ function Page() {
   React.useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log(process.env.EXPO_PUBLIC_BACKEND_URL);
+        console.log('backend url: ', process.env.EXPO_PUBLIC_BACKEND_URL);
         setLoading(true);
         const res = await axios
           .get(
@@ -25,13 +26,18 @@ function Page() {
           .then((res) => res);
 
         const data = await res.data;
-        console.log('data: ', data);
-        if (res.status === 404) {
+        if (
+          data?.isNewUser == true ||
+          data?.isNewUser == undefined ||
+          data?.isNewUser == null
+        ) {
           router.push('/(auth)/sign-up');
-          setLoading(false);
         }
+        console.log('data: ', data);
+        setLoading(false);
       } catch (err) {
         if ((err as AxiosError)?.response?.status === 404) {
+          setLoading(false);
           router.push('/(auth)/sign-up');
         }
       }
@@ -42,7 +48,7 @@ function Page() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {loading ? (
+      {loading && (
         <View style={{ flex: 1 }} className="items-center justify-center">
           <AntDesign
             name="loading1"
@@ -51,16 +57,14 @@ function Page() {
             className="animate-spin"
           />
         </View>
-      ) : (
-        <View>
-          <Text>Welcome, {user?.firstName}</Text>
-          <Text>Welcome, {user?.emailAddresses[0].emailAddress}</Text>
+      )}
+      {!loading && (
+        <View style={{ flex: 1 }} className="items-center justify-center">
+          <Text className="text-2xl">Welcome, {user?.firstName}!</Text>
           <Button
             title="Sign Out"
             onPress={() => {
-              signOut().then(() => {
-                <Redirect href="/(auth)/welcome" />;
-              });
+              signOut();
             }}
           />
         </View>
