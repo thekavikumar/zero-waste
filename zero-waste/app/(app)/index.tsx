@@ -1,7 +1,7 @@
 import { useAuth, useClerk } from '@clerk/clerk-expo';
 import { Redirect, router } from 'expo-router';
 import React from 'react';
-import { Button, Text, View } from 'react-native';
+import { Button, Image, Text, View } from 'react-native';
 import axios, { AxiosError } from 'axios';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -60,6 +60,10 @@ function Page() {
       )}
       {!loading && (
         <View style={{ flex: 1 }} className="items-center justify-center">
+          <Image
+            source={{ uri: user?.imageUrl }}
+            className="h-[100px] w-[100px] rounded-full"
+          />
           <Text className="text-2xl">Welcome, {user?.firstName}!</Text>
           <Button
             title="Sign Out"
